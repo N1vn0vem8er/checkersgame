@@ -5,7 +5,8 @@ project(checkersgame LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-add_executable(checkersgame src/main.cpp)
+add_executable(checkersgame src/main.cpp
+    src/checkersai.h src/checkersai.cpp)
 
 include(GNUInstallDirs)
 install(TARGETS checkersgame
