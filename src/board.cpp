@@ -137,12 +137,18 @@ State Board::update()
 
 void Board::draw()
 {
+    ClearBackground(RAYWHITE);
+
+    float tileSize = getTileSize();
+    float offsetX = getOffsetX();
+    float offsetY = getOffsetY();
+
     for(int row = 0; row < BOARD_SIZE; row++)
     {
         for(int col = 0; col < BOARD_SIZE; col++)
         {
             Color tileColor = ((row + col) % 2 == 0) ? colorLight : colorDark;
-            DrawRectangle(col * TILE_SIZE, row * TILE_SIZE, TILE_SIZE, TILE_SIZE, tileColor);
+            DrawRectangle(offsetX + col * tileSize, offsetY + row * tileSize, tileSize, tileSize, tileColor);
         }
     }
 
@@ -150,15 +156,15 @@ void Board::draw()
     {
         int col = selectedSquare % BOARD_SIZE;
         int row = selectedSquare / BOARD_SIZE;
-        DrawRectangle(col * TILE_SIZE, row * TILE_SIZE, TILE_SIZE, TILE_SIZE, colorHighlight);
+        DrawRectangle(offsetX + col * tileSize, offsetY + row * tileSize, tileSize, tileSize, colorHighlight);
     }
 
     for(int target : validTargets)
     {
         int col = target % BOARD_SIZE;
         int row = target / BOARD_SIZE;
-        DrawRectangle(col * TILE_SIZE, row * TILE_SIZE, TILE_SIZE, TILE_SIZE, colorValidTarget);
-        DrawCircle(col * TILE_SIZE + TILE_SIZE / 2, row * TILE_SIZE + TILE_SIZE / 2, 12, GREEN);
+        DrawRectangle(offsetX + col * tileSize, offsetY + row * tileSize, tileSize, tileSize, colorValidTarget);
+        DrawCircle(offsetX + col * tileSize + tileSize / 2.0f, offsetY + row * tileSize + tileSize / 2.0f, tileSize * 0.12f, GREEN);
     }
 
     for(int i = 0; i < 64; i++)
@@ -166,9 +172,9 @@ void Board::draw()
         if(boardState.at(i) != 0)
         {
             Vector2 center = getCenterFromIndex(i);
-            float radius = TILE_SIZE * 0.4f;
+            float radius = tileSize * 0.4f;
 
-            Color pieceColor = isHumanPiece(boardState.at(i)) ? colorHuman : colorAI;
+            Color pieceColor = isHumanPiece(boardState[i]) ? colorHuman : colorAI;
             DrawCircleV(center, radius, pieceColor);
 
             if(boardState.at(i) == 3 || boardState.at(i) == 4)
@@ -189,22 +195,28 @@ bool Board::isAIPiece(int piece) const
 
 int Board::getIndexFromMouse(Vector2 mousePos) const
 {
-    int col = mousePos.x / TILE_SIZE;
-    int row = mousePos.y / TILE_SIZE;
+    float tileSize = getTileSize();
+    float offsetX = getOffsetX();
+    float offsetY = getOffsetY();
+
+    int col = (mousePos.x - offsetX) / tileSize;
+    int row = (mousePos.y - offsetY) / tileSize;
 
     if(col >= 0 && col < BOARD_SIZE && row >= 0 && row < BOARD_SIZE)
         return row * BOARD_SIZE + col;
+
     return -1;
 }
 
 Vector2 Board::getCenterFromIndex(int index) const
 {
+    float tileSize = getTileSize();
     int col = index % BOARD_SIZE;
     int row = index / BOARD_SIZE;
 
     return {
-        static_cast<float>(col * TILE_SIZE + TILE_SIZE / 2),
-        static_cast<float>(row * TILE_SIZE + TILE_SIZE / 2)
+        getOffsetX() + col * tileSize + tileSize / 2.0f,
+        getOffsetY() + row * tileSize + tileSize / 2.0f
     };
 }
 
@@ -293,4 +305,16 @@ void Board::updateValidTargets()
         validTargets = captures;
     else if(!mustContinueJump)
             validTargets = getNormalMovesForSquare(selectedSquare);
+}
+float Board::getTileSize() const
+{
+    return std::min(GetScreenWidth(), GetScreenHeight()) / (float)BOARD_SIZE;
+}
+float Board::getOffsetX() const
+{
+    return (GetScreenWidth() - (getTileSize() * BOARD_SIZE)) / 2.0f;
+}
+float Board::getOffsetY() const
+{
+    return (GetScreenHeight() - (getTileSize() * BOARD_SIZE)) / 2.0f;
 }

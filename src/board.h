@@ -41,6 +41,9 @@ private:
     void setupInitialBoard();
     int getIndexFromMouse(Vector2 mousePos) const;
     Vector2 getCenterFromIndex(int index) const;
+    float getTileSize() const;
+    float getOffsetX() const;
+    float getOffsetY() const;
 };
 
 #endif // BOARD_H

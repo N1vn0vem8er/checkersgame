@@ -12,8 +12,8 @@ public:
     void draw();
 
 private:
-    Rectangle startButtonBounds {250, 350, 300, 60};
-    Rectangle exitButtonBounds {250, 450, 300, 60};
+    Rectangle startButtonBounds;
+    Rectangle exitButtonBounds;
 };
 
 #endif // MENU_H
