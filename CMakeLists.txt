@@ -14,7 +14,8 @@ add_executable(checkersgame src/main.cpp
 
     src/board.h src/board.cpp
     src/state.h
-    src/menu.h src/menu.cpp)
+    src/menu.h src/menu.cpp
+    src/gameover.h src/gameover.cpp)
 
 target_link_libraries(checkersgame PRIVATE raylib)
 

@@ -12,6 +12,7 @@ public:
     Board();
     State update();
     void draw();
+    int winner {0};
 
 private:
     std::array<int, 64> boardState;

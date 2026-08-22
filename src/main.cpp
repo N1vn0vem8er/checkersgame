@@ -1,4 +1,5 @@
 #include "board.h"
+#include "gameover.h"
 #include "menu.h"
 #include "state.h"
 #include <raylib.h>
@@ -10,6 +11,7 @@ int main()
     State state = State::MENU;
     Board board;
     Menu menu;
+    GameOver gameover;
     SetTargetFPS(60);
     SetExitKey(KEY_NULL);
     while(!WindowShouldClose() && state != State::EXIT)
@@ -24,6 +26,10 @@ int main()
         case State::GAME:
             state = board.update();
             break;
+        case State::GAMEOVER:
+            gameover.winner = board.winner;
+            state = gameover.update();
+            break;
         }
 
         switch(state)
@@ -35,6 +41,9 @@ int main()
             break;
         case State::GAME:
             board.draw();
+            break;
+        case State::GAMEOVER:
+            gameover.draw();
             break;
         }
         EndDrawing();

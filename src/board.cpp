@@ -127,7 +127,8 @@ State Board::update()
             }
             else
             {
-                return State::EXIT;
+                winner = aiPath.empty() ? 1 : 2;
+                return State::GAMEOVER;
             }
         }
     }

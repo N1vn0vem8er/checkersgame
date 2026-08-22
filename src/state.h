@@ -4,6 +4,7 @@
 enum class State {
     GAME,
     MENU,
+    GAMEOVER,
     EXIT
 };
 
