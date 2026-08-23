@@ -4,7 +4,9 @@ Board::Board()
 {
     setupInitialBoard();
     selectedSquare = -1;
-    isPlayerTurn = true;
+    isPlayer1Turn = true;
+    mustContinueJump = false;
+    aiTimer = 0.0;
 }
 
 void Board::setupInitialBoard()
@@ -31,7 +33,13 @@ State Board::update()
     if(IsKeyPressed(KEY_ESCAPE))
         return State::MENU;
 
-    if(isPlayerTurn)
+    if(!hasValidMoves())
+    {
+        winner = isPlayer1Turn ? 2 : 1;
+        return State::GAMEOVER;
+    }
+
+    if(isPlayer1Turn || !vsAI)
     {
         if(IsMouseButtonPressed(MOUSE_LEFT_BUTTON)){
             Vector2 mousePos = GetMousePosition();
@@ -40,9 +48,10 @@ State Board::update()
             if(clickedIndex != -1)
             {
                 int clickedPiece = boardState.at(clickedIndex);
-                if(isHumanPiece(clickedPiece) && !mustContinueJump)
+
+                if(isCurrentPlayerPiece(clickedPiece) && !mustContinueJump)
                 {
-                    bool globalCapture = hasAnyHumanCapture();
+                    bool globalCapture = hasAnyCapture();
                     if(!globalCapture || !getCapturesForSquare(clickedIndex).empty())
                     {
                         selectedSquare = clickedIndex;
@@ -69,6 +78,8 @@ State Board::update()
 
                             if(piece == 1 && (to / 8) == 0)
                                 piece = 3;
+                            else if(piece == 2 && (to / 8) == 7)
+                                piece = 4;
 
                             boardState[to] = piece;
 
@@ -83,7 +94,7 @@ State Board::update()
                                 mustContinueJump = false;
                                 selectedSquare = -1;
                                 validTargets.clear();
-                                isPlayerTurn = false;
+                                isPlayer1Turn = !isPlayer1Turn;
                                 aiTimer = GetTime();
                             }
                             break;
@@ -93,7 +104,7 @@ State Board::update()
             }
         }
     }
-    else
+    else if (vsAI && !isPlayer1Turn)
     {
         if(GetTime() - aiTimer > 0.5)
         {
@@ -123,11 +134,11 @@ State Board::update()
                 if(piece == 2 && (finalPos / 8) == 7)
                     piece = 4;
                 boardState[finalPos] = piece;
-                isPlayerTurn = true;
+                isPlayer1Turn = true;
             }
             else
             {
-                winner = aiPath.empty() ? 1 : 2;
+                winner = 1;
                 return State::GAMEOVER;
             }
         }
@@ -175,7 +186,7 @@ void Board::draw()
             Vector2 center = getCenterFromIndex(i);
             float radius = tileSize * 0.4f;
 
-            Color pieceColor = isHumanPiece(boardState[i]) ? colorHuman : colorAI;
+            Color pieceColor = isPlayer1Piece(boardState[i]) ? colorPlayer1 : colorPlayer2;
             DrawCircleV(center, radius, pieceColor);
 
             if(boardState.at(i) == 3 || boardState.at(i) == 4)
@@ -184,14 +195,35 @@ void Board::draw()
     }
 }
 
-bool Board::isHumanPiece(int piece) const
+bool Board::isPlayer1Piece(int piece) const
 {
     return piece == 1 || piece == 3;
 }
 
-bool Board::isAIPiece(int piece) const
+bool Board::isPlayer2Piece(int piece) const
 {
     return piece == 2 || piece == 4;
+}
+
+bool Board::isCurrentPlayerPiece(int piece) const
+{
+    return isPlayer1Turn ? isPlayer1Piece(piece) : isPlayer2Piece(piece);
+}
+
+bool Board::isOpponentPiece(int piece) const
+{
+    return isPlayer1Turn ? isPlayer2Piece(piece) : isPlayer1Piece(piece);
+}
+
+std::vector<std::pair<int, int> > Board::getPieceDirections(int piece) const
+{
+    if(piece == 3 || piece == 4)
+        return {{-1, -1}, {-1, 1}, {1, -1}, {1, 1}};
+    if(piece == 1)
+        return {{-1, -1}, {-1, 1}};
+    if(piece == 2)
+        return {{1, -1}, {1, 1}};
+    return {};
 }
 
 int Board::getIndexFromMouse(Vector2 mousePos) const
@@ -221,24 +253,17 @@ Vector2 Board::getCenterFromIndex(int index) const
     };
 }
 
-std::vector<std::pair<int, int>> Board::getHumanDirections(int piece) const
-{
-    if(piece == 3)
-        return {{-1, -1}, {-1, 1}, {1, -1}, {1, 1}};
-    return {{-1, -1}, {-1, 1}};
-}
-
 std::vector<int> Board::getCapturesForSquare(int index) const
 {
     std::vector<int> targets;
     int piece = boardState.at(index);
-    if(!isHumanPiece(piece))
+    if(!isCurrentPlayerPiece(piece))
         return targets;
 
     int row = index / 8;
     int col = index % 8;
 
-    for(auto [dRow, dCol] : getHumanDirections(piece))
+    for(auto [dRow, dCol] : getPieceDirections(piece))
     {
         int midRow = row + dRow;
         int midCol = col + dCol;
@@ -250,7 +275,7 @@ std::vector<int> Board::getCapturesForSquare(int index) const
             int middle = midRow * 8 + midCol;
             int target = targetRow * 8 + targetCol;
 
-            if(isAIPiece(boardState.at(middle)) && boardState.at(target) == 0)
+            if(isOpponentPiece(boardState.at(middle)) && boardState.at(target) == 0)
                 targets.push_back(target);
         }
     }
@@ -261,13 +286,13 @@ std::vector<int> Board::getNormalMovesForSquare(int index) const
 {
     std::vector<int> targets;
     int piece = boardState.at(index);
-    if(!isHumanPiece(piece))
+    if(!isCurrentPlayerPiece(piece))
         return targets;
 
     int row = index / 8;
     int col = index % 8;
 
-    for(auto [dRow, dCol] : getHumanDirections(piece))
+    for(auto [dRow, dCol] : getPieceDirections(piece))
     {
         int targetRow = row + dRow;
         int targetCol = col + dCol;
@@ -282,11 +307,27 @@ std::vector<int> Board::getNormalMovesForSquare(int index) const
     return targets;
 }
 
-bool Board::hasAnyHumanCapture() const
+bool Board::hasValidMoves() const
+{
+    if(mustContinueJump)
+        return true;
+
+    for(int i = 0; i < 64; i++)
+    {
+        if(isCurrentPlayerPiece(boardState.at(i)))
+        {
+            if(!getCapturesForSquare(i).empty() || !getNormalMovesForSquare(i).empty())
+                return true;
+        }
+    }
+    return false;
+}
+
+bool Board::hasAnyCapture() const
 {
     for(int i = 0; i < 64; i++)
     {
-        if(isHumanPiece(boardState.at(i)))
+        if(isCurrentPlayerPiece(boardState.at(i)))
             if(!getCapturesForSquare(i).empty())
                 return true;
     }
@@ -299,7 +340,7 @@ void Board::updateValidTargets()
     if(selectedSquare == -1)
         return;
 
-    bool globalCaptureAvailable = hasAnyHumanCapture();
+    bool globalCaptureAvailable = hasAnyCapture();
     auto captures = getCapturesForSquare(selectedSquare);
 
     if(globalCaptureAvailable)
