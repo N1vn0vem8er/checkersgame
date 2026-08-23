@@ -9,7 +9,7 @@
 class Board
 {
 public:
-    Board();
+    Board(bool& vsAI);
     State update();
     void draw();
     int winner {0};
@@ -30,7 +30,7 @@ private:
     const Color colorPlayer2 {BLACK};
     const Color colorHighlight {255, 255, 0, 100};
     const Color colorValidTarget {0, 255, 0, 120};
-    bool vsAI {true};
+    bool& vsAI;
 
 private:
     bool isPlayer1Piece(int piece) const;

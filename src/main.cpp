@@ -9,8 +9,8 @@ int main()
     SetConfigFlags(FLAG_WINDOW_RESIZABLE);
     InitWindow(1200, 800, "Checkers");
     State state = State::MENU;
-    Board board;
     Menu menu;
+    Board board(menu.vsAi);
     GameOver gameover;
     SetTargetFPS(60);
     SetExitKey(KEY_NULL);

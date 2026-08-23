@@ -10,9 +10,11 @@ public:
     Menu();
     State update();
     void draw();
+    bool vsAi {true};
 
 private:
-    Rectangle startButtonBounds;
+    Rectangle startAiButtonBounds;
+    Rectangle startHumanButtonBounds;
     Rectangle exitButtonBounds;
 };
 

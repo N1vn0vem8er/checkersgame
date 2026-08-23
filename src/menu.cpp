@@ -9,14 +9,27 @@ State Menu::update()
     float btnWidth = sw * 0.35f;
     float btnHeight = sh * 0.08f;
     float btnX = (sw - btnWidth) / 2.0f;
-    startButtonBounds = { btnX, sh * 0.45f, btnWidth, btnHeight };
-    exitButtonBounds = { btnX, sh * 0.58f, btnWidth, btnHeight };
+    startAiButtonBounds = { btnX, sh * 0.45f, btnWidth, btnHeight };
+    startHumanButtonBounds = { btnX, sh * 0.58f, btnWidth, btnHeight };
+    exitButtonBounds = { btnX, sh * 0.71f, btnWidth, btnHeight };
     Vector2 mousePos = GetMousePosition();
 
-    if(CheckCollisionPointRec(mousePos, startButtonBounds))
+    if(CheckCollisionPointRec(mousePos, startAiButtonBounds))
     {
         if(IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
+        {
+            vsAi = true;
             return State::GAME;
+        }
+    }
+
+    if(CheckCollisionPointRec(mousePos, startHumanButtonBounds))
+    {
+        if(IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
+        {
+            vsAi = false;
+            return State::GAME;
+        }
     }
 
     if(CheckCollisionPointRec(mousePos, exitButtonBounds))
@@ -41,11 +54,20 @@ void Menu::draw()
 
     Vector2 mousePos = GetMousePosition();
 
-    DrawRectangleRec(startButtonBounds, CheckCollisionPointRec(mousePos, startButtonBounds) ? LIGHTGRAY : GRAY);
-    DrawRectangleLinesEx(startButtonBounds, 3, DARKGRAY);
+    DrawRectangleRec(startAiButtonBounds, CheckCollisionPointRec(mousePos, startAiButtonBounds) ? LIGHTGRAY : GRAY);
+    DrawRectangleLinesEx(startAiButtonBounds, 3, DARKGRAY);
 
-    const char* startText = "New game";
-    DrawText(startText, startButtonBounds.x + (startButtonBounds.width - MeasureText(startText, btnFontSize)) / 2, startButtonBounds.y + (startButtonBounds.height - btnFontSize) / 2, btnFontSize, WHITE);
+    const char* startTextAi = "Play vs AI";
+    DrawText(startTextAi, startAiButtonBounds.x + (startAiButtonBounds.width - MeasureText(startTextAi, btnFontSize)) / 2, startAiButtonBounds.y + (startAiButtonBounds.height - btnFontSize) / 2, btnFontSize, WHITE);
+    DrawRectangleRec(exitButtonBounds, CheckCollisionPointRec(mousePos, exitButtonBounds) ? LIGHTGRAY : GRAY);
+    DrawRectangleLinesEx(exitButtonBounds, 3, DARKGRAY);
+
+    DrawRectangleRec(startHumanButtonBounds, CheckCollisionPointRec(mousePos, startHumanButtonBounds) ? LIGHTGRAY : GRAY);
+    DrawRectangleLinesEx(startHumanButtonBounds, 3, DARKGRAY);
+
+    const char* startTextHuman = "Play vs Human";
+    DrawText(startTextHuman, startHumanButtonBounds.x + (startHumanButtonBounds.width - MeasureText(startTextHuman, btnFontSize)) / 2, startHumanButtonBounds.y + (startHumanButtonBounds.height - btnFontSize) / 2, btnFontSize, WHITE);
+
     DrawRectangleRec(exitButtonBounds, CheckCollisionPointRec(mousePos, exitButtonBounds) ? LIGHTGRAY : GRAY);
     DrawRectangleLinesEx(exitButtonBounds, 3, DARKGRAY);
 

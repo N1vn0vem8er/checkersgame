@@ -1,6 +1,6 @@
 #include "board.h"
 
-Board::Board()
+Board::Board(bool& vsAI) : vsAI(vsAI)
 {
     setupInitialBoard();
     selectedSquare = -1;
