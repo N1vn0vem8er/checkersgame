@@ -108,7 +108,7 @@ State Board::update()
     {
         if(GetTime() - aiTimer > 0.5)
         {
-            std::vector<int> aiPath = ai.getBestMove(boardState);
+            std::vector<int> aiPath = ai.getBestMove(boardState, CheckersAI::Strategy::Minimax, 5);
 
             if(!aiPath.empty())
             {
