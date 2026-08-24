@@ -1,11 +1,11 @@
 # Checkers Game
 
-A checkers game implemented in C++ using the Raylib library. This project offers classic gameplay against a computer opponent in a graphical window.
+A checkers game implemented in C++ using the Raylib library. This project offers classic gameplay against a computer opponent or other player in a graphical window.
 
 ## Features
 
 - Fully playable classic checkers on an 8x8 board.
-- Computer opponent.
+- Play against computer opponent or other player.
 - Dynamically resizable game window.
 - Highlighting of available moves.
 
